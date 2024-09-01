@@ -25,4 +25,33 @@ contract OurTokenTest is Test {
     function testkdBalance() public view {
         assertEq(STARTING_BALANCE, ourToken.balanceOf(kd));
     }
+
+    function testAllowancesWorks() public {
+        uint256 initialAllowance = 1000;
+
+        // kd approves mb to spend Tokens on his behalf
+        vm.prank(kd);
+        ourToken.approve(mb, initialAllowance);
+
+        uint256 transferAmount = 500;
+        vm.prank(mb);
+        ourToken.transferFrom(kd, mb, transferAmount);
+        assertEq(ourToken.balanceOf(mb), transferAmount);
+        assertEq(ourToken.balanceOf(kd), STARTING_BALANCE - transferAmount);
+    }
+
+    function testTransfer() public {
+        uint256 transferAmount = 500;
+        uint256 initialBalance = ourToken.balanceOf(msg.sender);
+        vm.prank(msg.sender);
+        // Transfer tokens from msg.sender to kd
+        ourToken.transfer(kd, transferAmount);
+
+        // Check balances
+        assertEq(
+            ourToken.balanceOf(msg.sender),
+            initialBalance - transferAmount
+        );
+        assertEq(ourToken.balanceOf(kd), STARTING_BALANCE + transferAmount);
+    }
 }
